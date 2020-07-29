@@ -5,8 +5,8 @@ TAG ?= $(shell git describe --tag --always --dirty)
 BRANCH ?= $(shell git rev-parse --abbrev-ref HEAD)
 REGISTRY_AND_USERNAME := $(REGISTRY)/$(USERNAME)
 NAME := kubelet
-KUBELET_VER := v1.19.0-rc.0
-KUBELET_SHA512 := c9b0e23ade796d3d2b5bdcd246e75151cb17c5afc7597004ab7ae8f4789f73f2e36ce388b45d2095ecd7e3ee3a9700ec55443028c9067e33600a17f8670d3cef
+KUBELET_VER := v1.19.0-rc.3
+KUBELET_SHA512 := c3dad796d2b606bbe1cd6f50beb89f1501de4efa9fb99138b03bbd27ebc3db11726e2083f0d3f14cae1d7575c36228be023525a20402992eb747646636ca0664
 
 BUILD := docker buildx build
 PLATFORM ?= linux/amd64
@@ -36,5 +36,5 @@ docker-%: ## Builds the specified target defined in the Dockerfile using the doc
 	@$(MAKE) target-$* TARGET_ARGS="--tag $(REGISTRY_AND_USERNAME)/$(NAME):$(TAG) $(TARGET_ARGS)"
 
 .PHONY: container
-container: 
+container:
 	@$(MAKE) docker-$@ TARGET_ARGS="--push=$(PUSH)"
