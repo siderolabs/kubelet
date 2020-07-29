@@ -1,13 +1,6 @@
 ---
-kind: secret
-name: kubeconfig
-
-get:
-  path: buildx
-  name: kubeconfig
-
----
 kind: pipeline
+type: kubernetes
 name: default
 
 services:
@@ -28,11 +21,11 @@ steps:
   - name: setup-ci
     image: autonomy/build-container:latest
     commands:
-        - git fetch --tags
-        - apk add coreutils
-        - echo -e "$BUILDX_KUBECONFIG" > /root/.kube/config
-        - docker buildx create --driver kubernetes --driver-opt replicas=2 --driver-opt namespace=ci --driver-opt image=moby/buildkit:v0.6.2 --name ci --buildkitd-flags="--allow-insecure-entitlement security.insecure" --use
-        - docker buildx inspect --bootstrap
+      - sleep 5 # Give docker enough time to start.
+      - apk add coreutils
+      - docker buildx create --driver docker-container --platform linux/amd64 --buildkitd-flags "--allow-insecure-entitlement security.insecure" --name local --use unix:///var/outer-run/docker.sock
+      - docker buildx inspect --bootstrap
+      - git fetch --tags
     environment:
       BUILDX_KUBECONFIG:
         from_secret: kubeconfig
@@ -40,6 +33,8 @@ steps:
     volumes:
       - name: docker-socket
         path: /var/run
+      - name: outerdockersock
+        path: /var/outer-run
       - name: docker
         path: /root/.docker/buildx
       - name: kube
@@ -49,14 +44,16 @@ steps:
     image: autonomy/build-container:latest
     pull: always
     commands:
-        - make
+      - make
     when:
       event:
         include:
-            - pull_request
+          - pull_request
     volumes:
       - name: docker-socket
         path: /var/run
+      - name: outerdockersock
+        path: /var/outer-run
       - name: docker
         path: /root/.docker/buildx
       - name: kube
@@ -80,6 +77,8 @@ steps:
     volumes:
       - name: docker-socket
         path: /var/run
+      - name: outerdockersock
+        path: /var/outer-run
       - name: docker
         path: /root/.docker/buildx
       - name: kube
@@ -88,6 +87,9 @@ steps:
 volumes:
   - name: docker-socket
     temp: {}
+  - name: outerdockersock
+    host:
+      path: /var/ci-docker
   - name: docker
     temp: {}
   - name: kube
@@ -95,6 +97,7 @@ volumes:
 
 ---
 kind: pipeline
+type: kubernetes
 name: notify
 
 clone:
@@ -118,4 +121,4 @@ trigger:
     - failure
 
 depends_on:
-    - default
+  - default
