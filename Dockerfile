@@ -10,7 +10,7 @@ RUN wget -q -O /kubelet ${KUBELET_URL} && \
     echo "${KUBELET_SHA512}  /kubelet" | sha512sum -c && \
     chmod +x /kubelet
 
-FROM us.gcr.io/k8s-artifacts-prod/build-image/debian-iptables:v12.1.0 as container
+FROM us.gcr.io/k8s-artifacts-prod/build-image/debian-iptables:v12.1.2 as container
 
 RUN clean-install \
   bash \
