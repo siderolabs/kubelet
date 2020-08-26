@@ -5,8 +5,8 @@ TAG ?= $(shell git describe --tag --always --dirty)
 BRANCH ?= $(shell git rev-parse --abbrev-ref HEAD)
 REGISTRY_AND_USERNAME := $(REGISTRY)/$(USERNAME)
 NAME := kubelet
-KUBELET_VER := v1.19.0-rc.3
-KUBELET_SHA512 := c3dad796d2b606bbe1cd6f50beb89f1501de4efa9fb99138b03bbd27ebc3db11726e2083f0d3f14cae1d7575c36228be023525a20402992eb747646636ca0664
+KUBELET_VER := v1.19.0
+KUBELET_SHA512 := dd5cc49c2f867a73658e3196f147df2336d50118ff2a09690a58ea9f5f8ed57e6bee2e43407dc10afc362a8da7932fee08f380d0c787137750fe2293064cc601
 
 BUILD := docker buildx build
 PLATFORM ?= linux/amd64
