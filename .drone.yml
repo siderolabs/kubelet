@@ -3,46 +3,31 @@ kind: pipeline
 type: kubernetes
 name: default
 
-services:
-  - name: docker
-    image: docker:19.03-dind
-    entrypoint:
-      - dockerd
-    command:
-      - --dns=8.8.8.8
-      - --dns=8.8.4.4
-      - --log-level=error
-    privileged: true
-    volumes:
-      - name: docker-socket
-        path: /var/run
-
 steps:
   - name: setup-ci
     image: autonomy/build-container:latest
     commands:
-      - sleep 5 # Give docker enough time to start.
-      - apk add coreutils
-      - docker buildx create --driver docker-container --platform linux/amd64 --buildkitd-flags "--allow-insecure-entitlement security.insecure" --name local --use unix:///var/outer-run/docker.sock
-      - docker buildx inspect --bootstrap
       - git fetch --tags
+      - install-ci-key
+      - setup-buildx-amd64-arm64
     environment:
-      BUILDX_KUBECONFIG:
-        from_secret: kubeconfig
+      SSH_KEY:
+        from_secret: ssh_key
+      DOCKER_CLI_EXPERIMENTAL: enabled
     privileged: true
     volumes:
       - name: docker-socket
         path: /var/run
-      - name: outerdockersock
-        path: /var/outer-run
+      - name: ssh
+        path: /root/.ssh
       - name: docker
         path: /root/.docker/buildx
-      - name: kube
-        path: /root/.kube
 
   - name: build-container
     image: autonomy/build-container:latest
     pull: always
+    environment:
+      DOCKER_CLI_EXPERIMENTAL: enabled
     commands:
       - make
     when:
@@ -52,12 +37,10 @@ steps:
     volumes:
       - name: docker-socket
         path: /var/run
-      - name: outerdockersock
-        path: /var/outer-run
+      - name: ssh
+        path: /root/.ssh
       - name: docker
         path: /root/.docker/buildx
-      - name: kube
-        path: /root/.kube
 
   - name: build-and-publish-container
     image: autonomy/build-container:latest
@@ -77,22 +60,18 @@ steps:
     volumes:
       - name: docker-socket
         path: /var/run
-      - name: outerdockersock
-        path: /var/outer-run
+      - name: ssh
+        path: /root/.ssh
       - name: docker
         path: /root/.docker/buildx
-      - name: kube
-        path: /root/.kube
 
 volumes:
   - name: docker-socket
-    temp: {}
-  - name: outerdockersock
     host:
       path: /var/ci-docker
   - name: docker
     temp: {}
-  - name: kube
+  - name: ssh
     temp: {}
 
 ---
