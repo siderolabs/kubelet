@@ -47,4 +47,6 @@ RUN clean-install \
 
 COPY --from=builder /kubelet /usr/local/bin/kubelet
 
+LABEL org.opencontainers.image.source https://github.com/talos-systems/kubelet
+
 ENTRYPOINT ["/usr/local/bin/kubelet"]
