@@ -8,9 +8,9 @@ ARG KUBELET_VER
 ARG KUBELET_SHA512_AMD64
 ARG KUBELET_URL=https://storage.googleapis.com/kubernetes-release/release/${KUBELET_VER}/bin/linux/${TARGETARCH}/kubelet
 
-RUN wget -q -O /kubelet ${KUBELET_URL} && \
-    echo "${KUBELET_SHA512_AMD64}  /kubelet" | sha512sum -c && \
-    chmod +x /kubelet
+RUN wget -q -O /kubelet ${KUBELET_URL} \
+  && echo "${KUBELET_SHA512_AMD64}  /kubelet" | sha512sum -c \
+  && chmod +x /kubelet
 
 FROM alpine:latest as builder-arm64
 
@@ -19,9 +19,9 @@ ARG KUBELET_VER
 ARG KUBELET_SHA512_ARM64
 ARG KUBELET_URL=https://storage.googleapis.com/kubernetes-release/release/${KUBELET_VER}/bin/linux/${TARGETARCH}/kubelet
 
-RUN wget -q -O /kubelet ${KUBELET_URL} && \
-    echo "${KUBELET_SHA512_ARM64}  /kubelet" | sha512sum -c && \
-    chmod +x /kubelet
+RUN wget -q -O /kubelet ${KUBELET_URL} \
+  && echo "${KUBELET_SHA512_ARM64}  /kubelet" | sha512sum -c \
+  && chmod +x /kubelet
 
 ARG TARGETARCH
 FROM builder-${TARGETARCH} as builder
@@ -31,7 +31,8 @@ FROM us.gcr.io/k8s-artifacts-prod/build-image/debian-iptables:v12.1.2 as contain
 RUN clean-install \
   bash \
   ca-certificates \
-  ceph-common \
+  wget \
+  gnupg \
   cifs-utils \
   e2fsprogs \
   xfsprogs \
@@ -44,6 +45,11 @@ RUN clean-install \
   ucf \
   udev \
   util-linux
+
+RUN wget -q -O- 'https://download.ceph.com/keys/release.asc' | apt-key add -
+RUN echo deb https://download.ceph.com/debian-octopus/ buster main | tee /etc/apt/sources.list.d/ceph.list
+RUN apt-get clean \
+  && clean-install ceph-common
 
 COPY --from=builder /kubelet /usr/local/bin/kubelet
 
