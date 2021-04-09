@@ -9,7 +9,8 @@ ARG KUBELET_SHA512_AMD64
 ARG KUBELET_URL=https://storage.googleapis.com/kubernetes-release/release/${KUBELET_VER}/bin/linux/${TARGETARCH}/kubelet
 
 RUN wget -q -O /kubelet ${KUBELET_URL} \
-  && echo "${KUBELET_SHA512_AMD64}  /kubelet" | sha512sum -c \
+  && sha512sum /kubelet \
+  && echo "${KUBELET_SHA512_AMD64}  /kubelet" | sha512sum -cw \
   && chmod +x /kubelet
 
 FROM alpine:latest as builder-arm64
@@ -20,7 +21,8 @@ ARG KUBELET_SHA512_ARM64
 ARG KUBELET_URL=https://storage.googleapis.com/kubernetes-release/release/${KUBELET_VER}/bin/linux/${TARGETARCH}/kubelet
 
 RUN wget -q -O /kubelet ${KUBELET_URL} \
-  && echo "${KUBELET_SHA512_ARM64}  /kubelet" | sha512sum -c \
+  && sha512sum /kubelet \
+  && echo "${KUBELET_SHA512_ARM64}  /kubelet" | sha512sum -cw \
   && chmod +x /kubelet
 
 ARG TARGETARCH
