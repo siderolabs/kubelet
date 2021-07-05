@@ -5,9 +5,9 @@ TAG ?= $(shell git describe --tag --always --dirty)
 BRANCH ?= $(shell git rev-parse --abbrev-ref HEAD)
 REGISTRY_AND_USERNAME := $(REGISTRY)/$(USERNAME)
 NAME := kubelet
-KUBELET_VER := v1.21.2
-KUBELET_SHA512_AMD64 := 21fe5e202552a3b814acca3b24ca07506018d51dba6268b6a4be1aa51d5bdb46d8d678b7818efd7bdf5fa4b116691f6daf5f36d0f44723847b4d80bf9d988a49
-KUBELET_SHA512_ARM64 := 215e2c6b83e13feada118af517153571f10bbe492d7629136ae3b2497940badbc9a6f8da0c240198d044f13a4bc6dabbd5fb4e906509e8b4e99d96d3c2cbd3ea
+KUBELET_VER := v1.20.8
+KUBELET_SHA512_AMD64 := eaeed456c383dbda631e61ae5b56651f36dcc374ecb8a27954d5d1fb42a4b9720ea3e010fd9e5b36a9fc44ff72a5419592e0e87c25186bef67f8b77da5c5154f
+KUBELET_SHA512_ARM64 := 1e0abe103753213c830f18ce0e2e6a4718af7f96a6c65dc0ec1b43dc72ab5c2f2d7712412d37869c4d19c6fb5ab46ba3d0ae4e696458a4edc2ef960772677d03
 
 BUILD := docker buildx build
 PLATFORM ?= linux/amd64,linux/arm64
@@ -40,3 +40,10 @@ docker-%: ## Builds the specified target defined in the Dockerfile using the def
 .PHONY: container
 container:
 	@$(MAKE) docker-$@ TARGET_ARGS="--push=$(PUSH)"
+
+.PHONY: update-sha
+update-sha: update-sha-amd64 update-sha-arm64 ## Updates the kubelet sha512 checksums in the Makefile.
+
+update-sha-%:
+	sha512=`curl -sL https://storage.googleapis.com/kubernetes-release/release/$(KUBELET_VER)/bin/linux/${*}/kubelet.sha512`; \
+		sed -i "s/KUBELET_SHA512_$(shell echo '$*' | tr '[:lower:]' '[:upper:]') := .*/KUBELET_SHA512_$(shell echo '$*' | tr '[:lower:]' '[:upper:]') := $${sha512}/" Makefile
