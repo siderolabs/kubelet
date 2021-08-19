@@ -55,8 +55,8 @@ steps:
       - make PUSH=true
     when:
       event:
-        exclude:
-          - pull_request
+        include:
+          - tag
     volumes:
       - name: docker-socket
         path: /var/run
