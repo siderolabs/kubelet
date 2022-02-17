@@ -28,11 +28,13 @@ RUN wget -q -O /kubelet ${KUBELET_URL} \
 ARG TARGETARCH
 FROM builder-${TARGETARCH} as builder
 
-FROM us.gcr.io/k8s-artifacts-prod/build-image/debian-iptables:buster-v1.7.0 as container
+FROM us.gcr.io/k8s-artifacts-prod/build-image/debian-iptables:bullseye-v1.2.0 as container
 
 RUN clean-install \
+  --allow-change-held-packages \
   bash \
   ca-certificates \
+  libcap2 \
   wget \
   gnupg \
   cifs-utils \
@@ -49,7 +51,7 @@ RUN clean-install \
   util-linux
 
 RUN wget -q -O- 'https://download.ceph.com/keys/release.asc' | apt-key add -
-RUN echo deb https://download.ceph.com/debian-octopus/ buster main | tee /etc/apt/sources.list.d/ceph.list
+RUN echo deb https://download.ceph.com/debian-octopus/ bullseye main | tee /etc/apt/sources.list.d/ceph.list
 RUN apt-get clean \
   && clean-install ceph-common
 
