@@ -57,6 +57,6 @@ RUN apt-get clean \
 
 COPY --from=builder /kubelet /usr/local/bin/kubelet
 
-LABEL org.opencontainers.image.source https://github.com/talos-systems/kubelet
+LABEL org.opencontainers.image.source https://github.com/siderolabs/kubelet
 
 ENTRYPOINT ["/usr/local/bin/kubelet"]
