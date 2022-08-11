@@ -51,7 +51,9 @@ RUN clean-install \
   util-linux
 
 RUN wget -q -O- 'https://download.ceph.com/keys/release.asc' | apt-key add -
-RUN echo deb https://download.ceph.com/debian-octopus/ bullseye main | tee /etc/apt/sources.list.d/ceph.list
+# TODO: Ceph packages are broken for arm64, so we used packages available in Debian itself for now
+ARG TARGETARCH
+RUN if [ ${TARGETARCH} == "amd64" ]; then echo deb https://download.ceph.com/debian-pacific/ bullseye main | tee /etc/apt/sources.list.d/ceph.list; fi
 RUN apt-get clean \
   && clean-install ceph-common
 
