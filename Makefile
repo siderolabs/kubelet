@@ -16,6 +16,7 @@ PUSH ?= false
 COMMON_ARGS := --file=Dockerfile
 COMMON_ARGS += --progress=$(PROGRESS)
 COMMON_ARGS += --platform=$(PLATFORM)
+COMMON_ARGS += --provenance=false
 COMMON_ARGS += --build-arg=REGISTRY_AND_USERNAME=$(REGISTRY_AND_USERNAME)
 COMMON_ARGS += --build-arg=NAME=$(NAME)
 COMMON_ARGS += --build-arg=TAG=$(TAG)
