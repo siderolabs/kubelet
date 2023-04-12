@@ -28,7 +28,7 @@ RUN wget -q -O /kubelet ${KUBELET_URL} \
 ARG TARGETARCH
 FROM builder-${TARGETARCH} as builder
 
-FROM us.gcr.io/k8s-artifacts-prod/build-image/debian-iptables:bullseye-v1.5.4 as container
+FROM registry.k8s.io/build-image/debian-iptables:bullseye-v1.5.5 as container
 
 RUN clean-install \
   --allow-change-held-packages \
