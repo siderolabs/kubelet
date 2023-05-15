@@ -6,7 +6,7 @@ FROM alpine:latest as builder-amd64
 ARG TARGETARCH
 ARG KUBELET_VER
 ARG KUBELET_SHA512_AMD64
-ARG KUBELET_URL=https://storage.googleapis.com/kubernetes-release/release/${KUBELET_VER}/bin/linux/${TARGETARCH}/kubelet
+ARG KUBELET_URL=https://dl.k8s.io/release/${KUBELET_VER}/bin/linux/${TARGETARCH}/kubelet
 
 RUN wget -q -O /kubelet ${KUBELET_URL} \
   && sha512sum /kubelet \
@@ -18,7 +18,7 @@ FROM alpine:latest as builder-arm64
 ARG TARGETARCH
 ARG KUBELET_VER
 ARG KUBELET_SHA512_ARM64
-ARG KUBELET_URL=https://storage.googleapis.com/kubernetes-release/release/${KUBELET_VER}/bin/linux/${TARGETARCH}/kubelet
+ARG KUBELET_URL=https://dl.k8s.io/release/${KUBELET_VER}/bin/linux/${TARGETARCH}/kubelet
 
 RUN wget -q -O /kubelet ${KUBELET_URL} \
   && sha512sum /kubelet \

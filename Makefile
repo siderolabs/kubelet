@@ -46,5 +46,5 @@ container:
 update-sha: update-sha-amd64 update-sha-arm64 ## Updates the kubelet sha512 checksums in the Makefile.
 
 update-sha-%:
-	sha512=`curl -sL https://storage.googleapis.com/kubernetes-release/release/$(KUBELET_VER)/bin/linux/${*}/kubelet.sha512`; \
+	sha512=`curl -sL https://dl.k8s.io/release/$(KUBELET_VER)/bin/linux/${*}/kubelet.sha512`; \
 		sed -i "s/KUBELET_SHA512_$(shell echo '$*' | tr '[:lower:]' '[:upper:]') := .*/KUBELET_SHA512_$(shell echo '$*' | tr '[:lower:]' '[:upper:]') := $${sha512}/" Makefile
