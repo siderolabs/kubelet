@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+
+iscsid_pid=$(pgrep iscsid)
+
+if [ -z "${iscsid_pid}"]; then
+    >&2 echo ERROR: Cannot find iscsid PID
+    exit 1
+fi
+
+exec nsenter --target=${iscsid_pid} --mount --net -- /usr/local/sbin/iscsiadm "$@"

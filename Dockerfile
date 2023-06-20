@@ -32,6 +32,7 @@ FROM registry.k8s.io/build-image/debian-iptables:bullseye-v1.5.7 as container
 
 RUN clean-install \
   --allow-change-held-packages \
+  procps \
   bash \
   ca-certificates \
   libcap2 \
@@ -58,6 +59,9 @@ RUN apt-get clean \
   && clean-install ceph-common
 
 COPY --from=builder /kubelet /usr/local/bin/kubelet
+
+# Add wrapper for iscsiadm
+COPY files/iscsiadm /usr/local/sbin/iscsiadm
 
 LABEL org.opencontainers.image.source https://github.com/siderolabs/kubelet
 
