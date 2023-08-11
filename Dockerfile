@@ -28,7 +28,7 @@ RUN wget -q -O /kubelet ${KUBELET_URL} \
 ARG TARGETARCH
 FROM builder-${TARGETARCH} as builder
 
-FROM registry.k8s.io/build-image/debian-iptables:bullseye-v1.5.7 as container
+FROM registry.k8s.io/build-image/debian-iptables:bookworm-v1.0.0 as container
 
 RUN clean-install \
   --allow-change-held-packages \
@@ -36,8 +36,6 @@ RUN clean-install \
   bash \
   ca-certificates \
   libcap2 \
-  wget \
-  gnupg \
   cifs-utils \
   e2fsprogs \
   xfsprogs \
@@ -49,14 +47,8 @@ RUN clean-install \
   socat \
   ucf \
   udev \
-  util-linux
-
-RUN wget -q -O- 'https://download.ceph.com/keys/release.asc' | apt-key add -
-# TODO: Ceph packages are broken for arm64, so we used packages available in Debian itself for now
-ARG TARGETARCH
-RUN if [ ${TARGETARCH} == "amd64" ]; then echo deb https://download.ceph.com/debian-pacific/ bullseye main | tee /etc/apt/sources.list.d/ceph.list; fi
-RUN apt-get clean \
-  && clean-install ceph-common
+  util-linux \
+  ceph-common
 
 COPY --from=builder /kubelet /usr/local/bin/kubelet
 
