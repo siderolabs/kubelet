@@ -11,6 +11,7 @@ steps:
       - setup-ci
     environment:
       DOCKER_CLI_EXPERIMENTAL: enabled
+      BUILDKIT_FLAVOR: cross
     privileged: true
     volumes:
       - name: outer-docker-socket
