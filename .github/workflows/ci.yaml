@@ -1,0 +1,69 @@
+# THIS FILE WAS AUTOMATICALLY GENERATED, PLEASE DO NOT EDIT.
+#
+# Generated on 2024-05-09T12:19:43Z by kres 1e986af.
+
+name: default
+concurrency:
+  group: ${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+"on":
+  push:
+    branches:
+      - main
+      - release-*
+    tags:
+      - v*
+  pull_request:
+    branches:
+      - main
+      - release-*
+jobs:
+  default:
+    permissions:
+      actions: read
+      contents: write
+      issues: read
+      packages: write
+      pull-requests: read
+    runs-on:
+      - self-hosted
+      - generic
+    if: (!startsWith(github.head_ref, 'renovate/') && !startsWith(github.head_ref, 'dependabot/'))
+    services:
+      buildkitd:
+        image: moby/buildkit:v0.13.2
+        options: --privileged
+        ports:
+          - 1234:1234
+        volumes:
+          - /var/lib/buildkit/${{ github.repository }}:/var/lib/buildkit
+          - /usr/etc/buildkit/buildkitd.toml:/etc/buildkit/buildkitd.toml
+    steps:
+      - name: checkout
+        uses: actions/checkout@v4
+      - name: Unshallow
+        run: |
+          git fetch --prune --unshallow
+      - name: Set up Docker Buildx
+        id: setup-buildx
+        uses: docker/setup-buildx-action@v3
+        with:
+          append: |
+            - endpoint: tcp://buildkit-arm64.ci.svc.cluster.local:1234
+              platforms: linux/arm64
+          driver: remote
+          endpoint: tcp://127.0.0.1:1234
+      - name: Build
+        run: |
+          make
+      - name: Login to registry
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: docker/login-action@v3
+        with:
+          password: ${{ secrets.GITHUB_TOKEN }}
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+      - name: Push to registry
+        if: startsWith(github.ref, 'refs/tags/')
+        run: |
+          make PUSH=true
