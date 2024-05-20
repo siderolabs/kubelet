@@ -1,0 +1,31 @@
+---
+kind: auto.CI
+spec:
+  compileGHWorkflowsOnly: true
+---
+kind: common.GHWorkflow
+spec:
+  jobs:
+    - name: default
+      buildxOptions:
+        enabled: true
+        crossBuilder: true
+      runners:
+        - self-hosted
+        - generic
+      steps:
+        - name: build
+          nonMakeStep: true
+          command: make
+        - name: login-to-registry
+          conditions:
+            - only-on-tag
+          registryLoginStep:
+            registry: ghcr.io
+        - name: push
+          conditions:
+            - only-on-tag
+          nonMakeStep: true
+          command: make
+          environment:
+            PUSH: true

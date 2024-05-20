@@ -24,6 +24,8 @@ COMMON_ARGS += --build-arg=KUBELET_VER=$(KUBELET_VER)
 COMMON_ARGS += --build-arg=KUBELET_SHA512_AMD64=$(KUBELET_SHA512_AMD64)
 COMMON_ARGS += --build-arg=KUBELET_SHA512_ARM64=$(KUBELET_SHA512_ARM64)
 
+KRES_IMAGE ?= ghcr.io/siderolabs/kres:latest
+
 all: container
 
 target-%: ## Builds the specified target defined in the Dockerfile. The build result will remain only in the build cache.
@@ -48,3 +50,8 @@ update-sha: update-sha-amd64 update-sha-arm64 ## Updates the kubelet sha512 chec
 update-sha-%:
 	sha512=`curl -sL https://dl.k8s.io/release/$(KUBELET_VER)/bin/linux/${*}/kubelet.sha512`; \
 		sed -i "s/KUBELET_SHA512_$(shell echo '$*' | tr '[:lower:]' '[:upper:]') := .*/KUBELET_SHA512_$(shell echo '$*' | tr '[:lower:]' '[:upper:]') := $${sha512}/" Makefile
+
+.PHONY: rekres
+rekres:
+	@docker pull $(KRES_IMAGE)
+	@docker run --rm --net=host --user $(shell id -u):$(shell id -g) -v $(PWD):/src -w /src -e GITHUB_TOKEN $(KRES_IMAGE)
