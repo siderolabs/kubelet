@@ -12,7 +12,7 @@ spec:
         crossBuilder: true
       runners:
         - self-hosted
-        - generic
+        - pkgs
       steps:
         - name: build
           nonMakeStep: true
