@@ -9,7 +9,7 @@ spec:
     - name: default
       buildxOptions:
         enabled: true
-        crossBuilder: true
+        crossBuilder: false
       runners:
         - self-hosted
         - generic
