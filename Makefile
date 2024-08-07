@@ -9,6 +9,18 @@ KUBELET_VER := v1.31.0-rc.1
 KUBELET_SHA512_AMD64 := b52716aadd95d73c408b3b30baae288fd10f8c024424671392e233f00316d3f0546a6c6780e81f5ddac039020bcc80dfa85202939ac70ccec74a7b6bbdf26097
 KUBELET_SHA512_ARM64 := 2122ffaca810410ff0ac2cb0b6c1b05908fcdeda1dc64f310ae982a58278917a51f77fdfdc89713fbf5c3fe0ee16c9626c0464bb358a863900a38a19b8a421f7
 
+# For kubelet versions >= 1.31.0, the slim image is the default one, and previous image is labeled as -fat.
+# For kubelet versions < 1.31.0, the fat image is the default one, and previous image is labeled as -slim.
+USE_SLIM := $(shell (printf "%s\n" "$(KUBELET_VER)" "v1.30.99" | sort -V -C) && echo false || echo true)
+
+ifeq ($(USE_SLIM),true)
+	SLIM_TAG_SUFFIX :=
+	FAT_TAG_SUFFIX := -fat
+else
+	SLIM_TAG_SUFFIX := -slim
+	FAT_TAG_SUFFIX :=
+endif
+
 BUILD := docker buildx build
 PLATFORM ?= linux/amd64,linux/arm64
 PROGRESS ?= auto
@@ -38,7 +50,8 @@ local-%: ## Builds the specified target defined in the Dockerfile using the loca
 	@$(MAKE) target-$* TARGET_ARGS="--output=type=local,dest=$(DEST) $(TARGET_ARGS)"
 
 docker-%: ## Builds the specified target defined in the Dockerfile using the default output type.
-	@$(MAKE) target-$* TARGET_ARGS="--tag $(REGISTRY_AND_USERNAME)/$(NAME):$(TAG) $(TARGET_ARGS)"
+	@$(MAKE) target-$*-fat TARGET_ARGS="--tag $(REGISTRY_AND_USERNAME)/$(NAME):$(TAG)$(FAT_TAG_SUFFIX) $(TARGET_ARGS)"
+	@$(MAKE) target-$*-slim TARGET_ARGS="--tag $(REGISTRY_AND_USERNAME)/$(NAME):$(TAG)$(SLIM_TAG_SUFFIX) $(TARGET_ARGS)"
 
 .PHONY: container
 container:

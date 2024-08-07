@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/usr/bin/sh
 
 iscsid_pid=$(pgrep iscsid)
 
