@@ -35,6 +35,7 @@ FROM builder-${TARGETARCH} AS builder
 
 FROM ${BASE_IMAGE} AS container-fat
 
+ARG SLIM_PACKAGES
 RUN clean-install \
   --allow-change-held-packages \
   ${SLIM_PACKAGES} \
@@ -63,6 +64,7 @@ ENTRYPOINT ["/usr/local/bin/kubelet"]
 
 FROM ${BASE_IMAGE} AS container-slim
 
+ARG SLIM_PACKAGES
 RUN clean-install \
   --allow-change-held-packages \
   ${SLIM_PACKAGES}
