@@ -2,7 +2,7 @@
 
 iscsid_pid=$(pgrep iscsid)
 
-if [ -z "${iscsid_pid}"]; then
+if [ -z "${iscsid_pid}" ]; then
     >&2 echo ERROR: Cannot find iscsid PID
     exit 1
 fi
