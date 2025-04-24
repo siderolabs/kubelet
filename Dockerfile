@@ -33,7 +33,25 @@ FROM builder-${TARGETARCH} AS builder
 
 ########################
 
-FROM ${BASE_IMAGE} AS container-fat
+FROM ${BASE_IMAGE} AS base-updated
+RUN <<EOF
+  apt-get update
+  apt-get upgrade -y
+  apt-get clean -y
+  rm -rf \
+    /var/cache/debconf/* \
+    /var/lib/apt/lists/* \
+    /var/log/* \
+    /tmp/* \
+    /var/tmp/*
+EOF
+
+FROM scratch AS base
+COPY --from=base-updated / /
+
+########################
+
+FROM base AS container-fat
 
 ARG SLIM_PACKAGES
 RUN clean-install \
@@ -62,7 +80,7 @@ ENTRYPOINT ["/usr/local/bin/kubelet"]
 
 ########################
 
-FROM ${BASE_IMAGE} AS container-slim
+FROM base AS container-slim
 
 ARG SLIM_PACKAGES
 RUN clean-install \
