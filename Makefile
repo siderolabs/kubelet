@@ -5,9 +5,9 @@ TAG ?= $(shell git describe --tag --always --dirty)
 BRANCH ?= $(shell git rev-parse --abbrev-ref HEAD)
 REGISTRY_AND_USERNAME := $(REGISTRY)/$(USERNAME)
 NAME := kubelet
-KUBELET_VER := v1.31.10
-KUBELET_SHA512_AMD64 := 5af1765f5fa4b0ecf06e5146442c7e12948f080f7a69ff1744f2e975b2c26898c741c13ab505fcb62457f7d6a4a3205ced032af560b3f3d90b752ded3f2c9496
-KUBELET_SHA512_ARM64 := 920cd9279ffdeefdb64fb516595990a40c1cb0ab90076e0104b54a11096f4a56796e36750704d6451b533944292807c8dc23b2a6b85870cb2d4f74f62e0f0381
+KUBELET_VER := v1.32.6
+KUBELET_SHA512_AMD64 := d33d8c76748fcaffec5fb68d01542944e410404a06380f0253f07bd4a5bcdaffdfd6a3b759c0eeb1542f24c1e517d6e2f883a35c996d61350ab57facb2504683
+KUBELET_SHA512_ARM64 := 82636a3f33de2e9dc7459f8c08015deec34493769e4cbd19fa131af87413821a78d86b830c9568526c6072b8cee208087c09907e89242531fefcf13dfdb2b98a
 
 # For kubelet versions >= 1.31.0, the slim image is the default one, and previous image is labeled as -fat.
 # For kubelet versions < 1.31.0, the fat image is the default one, and previous image is labeled as -slim.
