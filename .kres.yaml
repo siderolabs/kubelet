@@ -10,9 +10,7 @@ spec:
       buildxOptions:
         enabled: true
         crossBuilder: true
-      runners:
-        - self-hosted
-        - pkgs
+      runnerGroup: pkgs
       steps:
         - name: build
           nonMakeStep: true
