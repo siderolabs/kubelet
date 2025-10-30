@@ -4,32 +4,24 @@
 ARG BASE_IMAGE=registry.k8s.io/build-image/debian-iptables:bookworm-v1.0.0
 ARG SLIM_PACKAGES="ca-certificates libcap2 ethtool iproute2 nfs-common socat util-linux"
 
-FROM alpine:latest AS builder-amd64
+FROM alpine:latest AS builder
+
+RUN apk add --no-cache cosign
 
 ARG TARGETARCH
 ARG KUBELET_VER
-ARG KUBELET_SHA512_AMD64
 ARG KUBELET_URL=https://dl.k8s.io/release/${KUBELET_VER}/bin/linux/${TARGETARCH}/kubelet
 
-RUN wget -q -O /kubelet ${KUBELET_URL} \
-  && sha512sum /kubelet \
-  && echo "${KUBELET_SHA512_AMD64}  /kubelet" | sha512sum -cw \
-  && chmod +x /kubelet
+RUN wget -q -O /kubelet ${KUBELET_URL}
+RUN wget -q -O /kubelet.sig ${KUBELET_URL}.sig
+RUN wget -q -O /kubelet.cert ${KUBELET_URL}.cert
 
-FROM alpine:latest AS builder-arm64
-
-ARG TARGETARCH
-ARG KUBELET_VER
-ARG KUBELET_SHA512_ARM64
-ARG KUBELET_URL=https://dl.k8s.io/release/${KUBELET_VER}/bin/linux/${TARGETARCH}/kubelet
-
-RUN wget -q -O /kubelet ${KUBELET_URL} \
-  && sha512sum /kubelet \
-  && echo "${KUBELET_SHA512_ARM64}  /kubelet" | sha512sum -cw \
-  && chmod +x /kubelet
-
-ARG TARGETARCH
-FROM builder-${TARGETARCH} AS builder
+# see https://kubernetes.io/docs/tasks/administer-cluster/verify-signed-artifacts/
+RUN cosign verify-blob "/kubelet" \
+  --signature "/kubelet.sig" \
+  --certificate "/kubelet.cert" \
+  --certificate-identity krel-staging@k8s-releng-prod.iam.gserviceaccount.com \
+  --certificate-oidc-issuer https://accounts.google.com
 
 ########################
 

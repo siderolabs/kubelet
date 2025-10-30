@@ -6,8 +6,6 @@ BRANCH ?= $(shell git rev-parse --abbrev-ref HEAD)
 REGISTRY_AND_USERNAME := $(REGISTRY)/$(USERNAME)
 NAME := kubelet
 KUBELET_VER := v1.35.0-alpha.2
-KUBELET_SHA512_AMD64 := 1b4bfe455eafec7aa5f5bc1510d4b9eebe1e62ac85544871409ffca9ee0b7e226862356110acc3d96bad5d9205e9e46032c05c238cb51d50cb438de51d9cfedf
-KUBELET_SHA512_ARM64 := e2fffce6c95c367c8441c194ecb9dadbf5c394a834a6b8d4535b550694a3e03ca0d41183818a7623a2a09e934d49522d8b9721d838ba77d8a675c15e376ac162
 
 # For kubelet versions >= 1.31.0, the slim image is the default one, and previous image is labeled as -fat.
 # For kubelet versions < 1.31.0, the fat image is the default one, and previous image is labeled as -slim.
@@ -33,8 +31,6 @@ COMMON_ARGS += --build-arg=REGISTRY_AND_USERNAME=$(REGISTRY_AND_USERNAME)
 COMMON_ARGS += --build-arg=NAME=$(NAME)
 COMMON_ARGS += --build-arg=TAG=$(TAG)
 COMMON_ARGS += --build-arg=KUBELET_VER=$(KUBELET_VER)
-COMMON_ARGS += --build-arg=KUBELET_SHA512_AMD64=$(KUBELET_SHA512_AMD64)
-COMMON_ARGS += --build-arg=KUBELET_SHA512_ARM64=$(KUBELET_SHA512_ARM64)
 
 KRES_IMAGE ?= ghcr.io/siderolabs/kres:latest
 
@@ -56,13 +52,6 @@ docker-%: ## Builds the specified target defined in the Dockerfile using the def
 .PHONY: container
 container:
 	@$(MAKE) docker-$@ TARGET_ARGS="--push=$(PUSH)"
-
-.PHONY: update-sha
-update-sha: update-sha-amd64 update-sha-arm64 ## Updates the kubelet sha512 checksums in the Makefile.
-
-update-sha-%:
-	sha512=`curl -sL https://dl.k8s.io/release/$(KUBELET_VER)/bin/linux/${*}/kubelet.sha512`; \
-		sed -i "s/KUBELET_SHA512_$(shell echo '$*' | tr '[:lower:]' '[:upper:]') := .*/KUBELET_SHA512_$(shell echo '$*' | tr '[:lower:]' '[:upper:]') := $${sha512}/" Makefile
 
 .PHONY: rekres
 rekres:
