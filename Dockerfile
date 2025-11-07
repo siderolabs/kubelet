@@ -23,6 +23,8 @@ RUN cosign verify-blob "/kubelet" \
   --certificate-identity krel-staging@k8s-releng-prod.iam.gserviceaccount.com \
   --certificate-oidc-issuer https://accounts.google.com
 
+RUN chmod +x /kubelet
+
 ########################
 
 FROM ${BASE_IMAGE} AS base-updated
