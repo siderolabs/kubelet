@@ -1,8 +1,9 @@
 ## Using the builder this way keeps us from having to install wget and adding an extra
 ## fat step that just does a chmod on the kubelet binary
 
-ARG BASE_IMAGE=registry.k8s.io/build-image/debian-iptables:bookworm-v1.0.0
-ARG SLIM_PACKAGES="ca-certificates libcap2 ethtool iproute2 nfs-common socat util-linux"
+ARG BASE_IMAGE=registry.k8s.io/build-image/debian-base:bookworm-v1.0.7
+ARG SLIM_PACKAGES="ca-certificates libcap2 iptables nftables nfs-common util-linux"
+ARG FAT_PACKAGES="bash ceph-common cifs-utils e2fsprogs ethtool glusterfs-client iproute2 jq procps socat ucf udev xfsprogs"
 
 FROM alpine:latest AS builder
 
@@ -27,41 +28,21 @@ RUN chmod +x /kubelet
 
 ########################
 
-FROM ${BASE_IMAGE} AS base-updated
-RUN <<EOF
-  apt-get update
-  apt-get upgrade -y
-  apt-get clean -y
-  rm -rf \
-    /var/cache/debconf/* \
-    /var/lib/apt/lists/* \
-    /var/log/* \
-    /tmp/* \
-    /var/tmp/*
-EOF
+FROM ${BASE_IMAGE} AS base-image
 
 FROM scratch AS base
-COPY --from=base-updated / /
+COPY --from=base-image / /
 
 ########################
 
 FROM base AS container-fat
 
 ARG SLIM_PACKAGES
+ARG FAT_PACKAGES
 RUN clean-install \
   --allow-change-held-packages \
   ${SLIM_PACKAGES} \
-  bash \
-  ceph-common \
-  cifs-utils \
-  e2fsprogs \
-  ethtool \
-  glusterfs-client \
-  jq \
-  procps \
-  ucf \
-  udev \
-  xfsprogs
+  ${FAT_PACKAGES}
 
 COPY --from=builder /kubelet /usr/local/bin/kubelet
 

@@ -5,19 +5,7 @@ TAG ?= $(shell git describe --tag --always --dirty)
 BRANCH ?= $(shell git rev-parse --abbrev-ref HEAD)
 REGISTRY_AND_USERNAME := $(REGISTRY)/$(USERNAME)
 NAME := kubelet
-KUBELET_VER := v1.35.1
-
-# For kubelet versions >= 1.31.0, the slim image is the default one, and previous image is labeled as -fat.
-# For kubelet versions < 1.31.0, the fat image is the default one, and previous image is labeled as -slim.
-USE_SLIM := $(shell (printf "%s\n" "$(KUBELET_VER)" "v1.30.99" | sort -V -C) && echo false || echo true)
-
-ifeq ($(USE_SLIM),true)
-	SLIM_TAG_SUFFIX :=
-	FAT_TAG_SUFFIX := -fat
-else
-	SLIM_TAG_SUFFIX := -slim
-	FAT_TAG_SUFFIX :=
-endif
+KUBELET_VER := v1.36.0-alpha.1
 
 BUILD := docker buildx build
 PLATFORM ?= linux/amd64,linux/arm64
@@ -46,8 +34,8 @@ local-%: ## Builds the specified target defined in the Dockerfile using the loca
 	@$(MAKE) target-$* TARGET_ARGS="--output=type=local,dest=$(DEST) $(TARGET_ARGS)"
 
 docker-%: ## Builds the specified target defined in the Dockerfile using the default output type.
-	@$(MAKE) target-$*-fat TARGET_ARGS="--tag $(REGISTRY_AND_USERNAME)/$(NAME):$(TAG)$(FAT_TAG_SUFFIX) $(TARGET_ARGS)"
-	@$(MAKE) target-$*-slim TARGET_ARGS="--tag $(REGISTRY_AND_USERNAME)/$(NAME):$(TAG)$(SLIM_TAG_SUFFIX) $(TARGET_ARGS)"
+	@$(MAKE) target-$*-fat TARGET_ARGS="--tag $(REGISTRY_AND_USERNAME)/$(NAME):$(TAG)-fat $(TARGET_ARGS)"
+	@$(MAKE) target-$*-slim TARGET_ARGS="--tag $(REGISTRY_AND_USERNAME)/$(NAME):$(TAG) $(TARGET_ARGS)"
 
 .PHONY: container
 container:
