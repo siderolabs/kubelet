@@ -2,7 +2,8 @@
 ## fat step that just does a chmod on the kubelet binary
 
 ARG BASE_IMAGE=registry.k8s.io/build-image/debian-iptables:bookworm-v1.0.0
-ARG SLIM_PACKAGES="ca-certificates libcap2 ethtool iproute2 nfs-common socat util-linux"
+ARG SLIM_PACKAGES="ca-certificates libcap2 nfs-common util-linux"
+ARG FAT_PACKAGES="bash ceph-common cifs-utils e2fsprogs glusterfs-client jq procps ucf udev xfsprogs socat iproute2 ethtool"
 
 FROM alpine:latest AS builder
 
@@ -51,17 +52,7 @@ ARG SLIM_PACKAGES
 RUN clean-install \
   --allow-change-held-packages \
   ${SLIM_PACKAGES} \
-  bash \
-  ceph-common \
-  cifs-utils \
-  e2fsprogs \
-  ethtool \
-  glusterfs-client \
-  jq \
-  procps \
-  ucf \
-  udev \
-  xfsprogs
+  ${FAT_PACKAGES}
 
 COPY --from=builder /kubelet /usr/local/bin/kubelet
 
