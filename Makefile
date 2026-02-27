@@ -5,7 +5,7 @@ TAG ?= $(shell git describe --tag --always --dirty)
 BRANCH ?= $(shell git rev-parse --abbrev-ref HEAD)
 REGISTRY_AND_USERNAME := $(REGISTRY)/$(USERNAME)
 NAME := kubelet
-KUBELET_VER := v1.32.13
+KUBELET_VER := v1.33.9
 
 BUILD := docker buildx build
 PLATFORM ?= linux/amd64,linux/arm64
