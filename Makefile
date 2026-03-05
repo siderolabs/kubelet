@@ -5,6 +5,9 @@ TAG ?= $(shell git describe --tag --always --dirty)
 BRANCH ?= $(shell git rev-parse --abbrev-ref HEAD)
 REGISTRY_AND_USERNAME := $(REGISTRY)/$(USERNAME)
 NAME := kubelet
+ARTIFACTS := _out
+OPERATING_SYSTEM := $(shell uname -s | tr '[:upper:]' '[:lower:]')
+GOARCH := $(shell uname -m | sed 's/x86_64/amd64/' | sed 's/aarch64/arm64/')
 KUBELET_VER := v1.35.2
 
 BUILD := docker buildx build
@@ -21,6 +24,9 @@ COMMON_ARGS += --build-arg=TAG=$(TAG)
 COMMON_ARGS += --build-arg=KUBELET_VER=$(KUBELET_VER)
 
 KRES_IMAGE ?= ghcr.io/siderolabs/kres:latest
+IMAGE_SIGNER_RELEASE ?= v0.2.0
+SLIM_IMAGE ?= $(REGISTRY_AND_USERNAME)/$(NAME):$(TAG)
+FAT_IMAGE ?= $(REGISTRY_AND_USERNAME)/$(NAME):$(TAG)-fat
 
 all: container
 
@@ -34,8 +40,8 @@ local-%: ## Builds the specified target defined in the Dockerfile using the loca
 	@$(MAKE) target-$* TARGET_ARGS="--output=type=local,dest=$(DEST) $(TARGET_ARGS)"
 
 docker-%: ## Builds the specified target defined in the Dockerfile using the default output type.
-	@$(MAKE) target-$*-fat TARGET_ARGS="--tag $(REGISTRY_AND_USERNAME)/$(NAME):$(TAG)-fat $(TARGET_ARGS)"
-	@$(MAKE) target-$*-slim TARGET_ARGS="--tag $(REGISTRY_AND_USERNAME)/$(NAME):$(TAG) $(TARGET_ARGS)"
+	@$(MAKE) target-$*-fat TARGET_ARGS="--tag $(FAT_IMAGE) $(TARGET_ARGS)"
+	@$(MAKE) target-$*-slim TARGET_ARGS="--tag $(SLIM_IMAGE) $(TARGET_ARGS)"
 
 .PHONY: container
 container:
@@ -45,3 +51,15 @@ container:
 rekres:
 	@docker pull $(KRES_IMAGE)
 	@docker run --rm --net=host --user $(shell id -u):$(shell id -g) -v $(PWD):/src -w /src -e GITHUB_TOKEN $(KRES_IMAGE)
+
+$(ARTIFACTS):  ## Creates artifacts directory.
+	@mkdir -p $(ARTIFACTS)
+
+.PHONY: $(ARTIFACTS)/image-signer
+$(ARTIFACTS)/image-signer: $(ARTIFACTS)
+	@curl -sSL https://github.com/siderolabs/go-tools/releases/download/$(IMAGE_SIGNER_RELEASE)/image-signer-$(OPERATING_SYSTEM)-$(GOARCH) -o $(ARTIFACTS)/image-signer
+	@chmod +x $(ARTIFACTS)/image-signer
+
+.PHONY: sign-images
+sign-images: $(ARTIFACTS)/image-signer
+	@$(ARTIFACTS)/image-signer sign --timeout=15m  $(FAT_IMAGE)@$$(crane digest $(FAT_IMAGE)) $(SLIM_IMAGE)@$$(crane digest $(SLIM_IMAGE))
