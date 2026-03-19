@@ -13,9 +13,9 @@ ARG TARGETARCH
 ARG KUBELET_VER
 ARG KUBELET_URL=https://dl.k8s.io/release/${KUBELET_VER}/bin/linux/${TARGETARCH}/kubelet
 
-RUN wget -q -O /kubelet ${KUBELET_URL}
-RUN wget -q -O /kubelet.sig ${KUBELET_URL}.sig
-RUN wget -q -O /kubelet.cert ${KUBELET_URL}.cert
+ADD ${KUBELET_URL} /kubelet
+ADD ${KUBELET_URL}.sig /kubelet.sig
+ADD ${KUBELET_URL}.cert /kubelet.cert
 
 # see https://kubernetes.io/docs/tasks/administer-cluster/verify-signed-artifacts/
 RUN cosign verify-blob "/kubelet" \
