@@ -8,7 +8,7 @@ NAME := kubelet
 ARTIFACTS := _out
 OPERATING_SYSTEM := $(shell uname -s | tr '[:upper:]' '[:lower:]')
 GOARCH := $(shell uname -m | sed 's/x86_64/amd64/' | sed 's/aarch64/arm64/')
-KUBELET_VER := v1.36.0-rc.0
+KUBELET_VER := v1.36.0-rc.1
 
 BUILD := docker buildx build
 PLATFORM ?= linux/amd64,linux/arm64
