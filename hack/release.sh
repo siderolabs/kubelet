@@ -19,7 +19,7 @@ fi
 
 TAG="$1"
 
-if [[ ! "${TAG}" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+if [[ ! "${TAG}" =~ ^v[0-9]+\.[0-9]+\.[0-9]+(-.+)?$ ]]; then
 	echo "error: tag must look like vX.Y.Z (got '${TAG}')" >&2
 	exit 1
 fi
