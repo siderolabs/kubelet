@@ -27,3 +27,7 @@ spec:
           command: make
           environment:
             PUSH: true
+---
+kind: common.Repository
+spec:
+  allowPushesToMain: true
