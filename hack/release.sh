@@ -26,9 +26,24 @@ fi
 
 cd "$(git rev-parse --show-toplevel)"
 
-if [[ -n "$(git status --porcelain)" ]]; then
-	echo "error: working tree is not clean; commit or stash changes first" >&2
+# Staged changes are fine (they are left staged and not included in the
+# release commit), but unstaged or untracked changes are not.
+if git status --porcelain | grep -q '^.[^ ]'; then
+	echo "error: working tree is not clean; commit, stage or stash changes first" >&2
 	git status --short >&2
+	exit 1
+fi
+
+if ! git diff --cached --quiet -- Makefile; then
+	echo "error: Makefile has staged changes; unstage them first" >&2
+	exit 1
+fi
+
+# Fail early (before pushing anything) if gh can't talk to GitHub, e.g. an
+# expired GITHUB_TOKEN.
+if ! gh auth status >/dev/null 2>&1; then
+	echo "error: gh is not authenticated; check GITHUB_TOKEN or run 'gh auth login'" >&2
+	gh auth status >&2 || true
 	exit 1
 fi
 
@@ -46,7 +61,6 @@ sed -i.bak "s|^KUBELET_VER := .*|KUBELET_VER := ${TAG}|" Makefile
 rm -f Makefile.bak
 
 # Commit to main with DCO sign-off.
-git add Makefile
 git commit --signoff \
 	-m "feat: update kubelet to ${TAG}" \
 	-m "See https://github.com/kubernetes/kubernetes/releases/tag/${TAG}"
@@ -61,7 +75,7 @@ git push origin "${TAG}"
 echo "waiting for the GitHub Actions run for ${TAG} to start..."
 RUN_ID=""
 for _ in $(seq 1 30); do
-	RUN_ID="$(gh run list --branch "${TAG}" --limit 1 --json databaseId --jq '.[0].databaseId' 2>/dev/null || true)"
+	RUN_ID="$(gh run list --branch "${TAG}" --limit 1 --json databaseId --jq '.[0].databaseId // empty')"
 	if [[ -n "${RUN_ID}" ]]; then
 		break
 	fi
