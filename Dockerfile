@@ -1,7 +1,7 @@
 ## Using the builder this way keeps us from having to install wget and adding an extra
 ## fat step that just does a chmod on the kubelet binary
 
-ARG BASE_IMAGE=registry.k8s.io/build-image/debian-base:bookworm-v1.0.7
+ARG BASE_IMAGE=registry.k8s.io/build-image/debian-base:bookworm-v1.0.9
 ARG SLIM_PACKAGES="ca-certificates libcap2 iptables nftables nfs-common util-linux"
 ARG FAT_PACKAGES="bash ceph-common cifs-utils e2fsprogs ethtool glusterfs-client iproute2 jq procps socat ucf udev xfsprogs"
 
