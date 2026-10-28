@@ -60,6 +60,8 @@ fi
 sed -i.bak "s|^KUBELET_VER := .*|KUBELET_VER := ${TAG}|" Makefile
 rm -f Makefile.bak
 
+git add Makefile
+
 # Commit to main with DCO sign-off.
 git commit --signoff \
 	-m "feat: update kubelet to ${TAG}" \
